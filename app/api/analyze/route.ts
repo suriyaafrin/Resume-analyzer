@@ -8,15 +8,21 @@ export async function POST(req: NextRequest) {
     if (!text || typeof text !== "string" || text.trim().length < 20) {
       return NextResponse.json(
         { error: "Resume text is too short to analyze." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Simulated model latency — swap this block for a real FastAPI /analyze call:
     // const res = await fetch(`${process.env.BACKEND_URL}/analyze`, { method: "POST", ... });
-    await new Promise((r) => setTimeout(r, 900));
-
-    const result = analyzeResume(text, roleId ?? "frontend");
+    const res = await fetch(
+      `${process.env.BACKEND_URL ?? "http://localhost:8000"}/analyze`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, role_id: roleId ?? "frontend" }),
+      },
+    );
+    const result = await res.json();
     return NextResponse.json(result);
   } catch (err) {
     return NextResponse.json({ error: "Analysis failed." }, { status: 500 });
